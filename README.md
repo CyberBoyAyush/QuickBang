@@ -128,4 +128,4 @@ pnpm run build
 [CyberBoyAyush](https://github.com/cyberboyayush)
 
 
-# Thanks to Duck Duck Go for their [bangs](https://duckduckgo.com/bang.html) and Theo for Unduck.
+#### Thanks to Duck Duck Go for their [bangs](https://duckduckgo.com/bang.html) and Theo for Unduck.
