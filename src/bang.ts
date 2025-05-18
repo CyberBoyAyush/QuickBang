@@ -2,15 +2,6 @@
 
 export const bangs = [
   {
-    c: "AI",
-    d: "www.t3.chat",
-    r: 0,
-    s: "T3 Chat",
-    sc: "AI",
-    t: "t3",
-    u: "https://www.t3.chat/new?q={{{s}}}",
-  },
-  {
     c: "Perplexity",
     d: "www.perplexity.ai/",
     r: 0,
@@ -288,6 +279,15 @@ export const bangs = [
     sc: "Domains",
     t: "1und1",
     u: "https://www.1und1.de/suche?query={{{s}}}",
+  },
+  {
+    c: "AI",
+    d: "www.t3.chat",
+    r: 0,
+    s: "T3 Chat",
+    sc: "AI",
+    t: "t3",
+    u: "https://www.t3.chat/new?q={{{s}}}",
   },
   {
     c: "News",
