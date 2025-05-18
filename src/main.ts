@@ -1,6 +1,24 @@
 import { bangs } from "./bang";
 import "./global.css";
 
+// Define type for bangs
+interface Bang {
+  t: string; // shortcut
+  d: string; // domain
+  u: string; // url with search placeholder
+}
+
+// Custom bangs from localStorage
+const getCustomBangs = (): Bang[] => {
+  try {
+    const customBangsStr = localStorage.getItem("custom-bangs");
+    return customBangsStr ? JSON.parse(customBangsStr) : [];
+  } catch (e) {
+    console.error("Error parsing custom bangs:", e);
+    return [];
+  }
+};
+
 function noSearchDefaultPageRender() {
   const app = document.querySelector<HTMLDivElement>("#app")!;
   app.innerHTML = `
@@ -97,6 +115,49 @@ function noSearchDefaultPageRender() {
             </div>
             
             <p class="learn-more"><a href="https://duckduckgo.com/bang.html" target="_blank">Browse all available shortcuts →</a></p>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <h2>Custom Bangs</h2>
+          </div>
+          <div class="card-body">
+            <p>Create your own custom search bangs by adding them to your browser's local storage:</p>
+            
+            <div class="code-container">
+              <code>
+const customBangs = JSON.parse(localStorage.getItem('custom-bangs') || '[]');
+customBangs.push({
+  t: "myshort",  // The shortcut (e.g., !myshort)
+  d: "example.com",  // The domain
+  u: "https://example.com/search?q={{{s}}}"  // The search URL with {{{s}}} as the query placeholder
+});
+localStorage.setItem('custom-bangs', JSON.stringify(customBangs));
+              </code>
+              <button class="copy-custom-bang-button tooltip" data-tooltip="Copy to clipboard">
+                <img src="/clipboard.svg" alt="Copy" />
+              </button>
+            </div>
+            
+            <div class="note">
+              <p><strong>Note:</strong> Custom bangs can override existing bangs. If you define a custom bang with the same shortcut as an existing one, your custom bang will be used.</p>
+              <p><strong>Example:</strong> Add a custom search for DEV.to:</p>
+              <div class="code-container">
+                <code>
+const customBangs = JSON.parse(localStorage.getItem('custom-bangs') || '[]');
+customBangs.push({
+  t: "dev",
+  d: "dev.to", 
+  u: "https://dev.to/search?q={{{s}}}"
+});
+localStorage.setItem('custom-bangs', JSON.stringify(customBangs));
+                </code>
+                <button class="copy-devto-example tooltip" data-tooltip="Copy to clipboard">
+                  <img src="/clipboard.svg" alt="Copy" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -257,6 +318,36 @@ function noSearchDefaultPageRender() {
     }
   });
 
+  // Add copy functionality for custom bang code examples
+  const copyButtons = [
+    app.querySelector<HTMLButtonElement>(".copy-custom-bang-button"),
+    app.querySelector<HTMLButtonElement>(".copy-devto-example")
+  ];
+  
+  copyButtons.forEach(button => {
+    if (!button) return;
+    
+    const buttonIcon = button.querySelector("img")!;
+    const buttonCode = button.closest('.code-container')?.querySelector('code');
+    
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(buttonCode?.textContent?.trim() || "");
+        buttonIcon.src = "/clipboard-check.svg";
+        button.setAttribute('data-tooltip', 'Copied!');
+        button.classList.add('copied');
+        
+        setTimeout(() => {
+          buttonIcon.src = "/clipboard.svg";
+          button.setAttribute('data-tooltip', 'Copy to clipboard');
+          button.classList.remove('copied');
+        }, 2000);
+      } catch (error) {
+        console.error('Failed to copy text: ', error);
+      }
+    });
+  });
+
   // Desktop/mobile tab switching
   const deviceTabs = app.querySelectorAll<HTMLButtonElement>('.device-tab');
   const deviceContents = app.querySelectorAll<HTMLDivElement>('.device-content');
@@ -299,7 +390,15 @@ function noSearchDefaultPageRender() {
 }
 
 const LS_DEFAULT_BANG = localStorage.getItem("default-bang") ?? "brave";
-const defaultBang = bangs.find((b) => b.t === LS_DEFAULT_BANG);
+const customBangs = getCustomBangs();
+
+// Merge bangs - allow custom bangs to override existing ones
+const allBangs: Bang[] = [
+  ...customBangs,                                      // Custom bangs take precedence
+  ...bangs.filter(b => !customBangs.some(cb => cb.t === b.t))  // Add original bangs that don't have a custom override
+];
+
+const defaultBang = allBangs.find((b) => b.t === LS_DEFAULT_BANG);
 
 function getBangredirectUrl() {
   const url = new URL(window.location.href);
@@ -313,7 +412,7 @@ function getBangredirectUrl() {
   const match = query.match(/([!:])(\S+)/i);
 
   const bangCandidate = match?.[2]?.toLowerCase();
-  const selectedBang = bangs.find((b) => b.t === bangCandidate) ?? defaultBang;
+  const selectedBang = allBangs.find((b) => b.t === bangCandidate) ?? defaultBang;
 
   // Remove the first bang from the query (either ! or :)
   const cleanQuery = query.replace(/([!:])\S+\s*/i, "").trim();
@@ -327,7 +426,7 @@ function getBangredirectUrl() {
   const searchUrl = selectedBang?.u.replace(
     "{{{s}}}",
     // Replace %2F with / to fix formats like "!ghr+cyberboyayush/quickbang"
-    encodeURIComponent(cleanQuery).replace(/%2F/g, "/"),
+    encodeURIComponent(cleanQuery).replace(/%2F/g, "/")
   );
   if (!searchUrl) return null;
 
