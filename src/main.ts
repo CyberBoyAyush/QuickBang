@@ -37,40 +37,63 @@ function noSearchDefaultPageRender() {
         
         <div class="card">
           <div class="card-header">
-            <h2>How to use</h2>
+            <h2>Popular Bangs</h2>
           </div>
           <div class="card-body">
             <ul class="feature-list">
               <li>
                 <div class="feature-icon">🔍</div>
                 <div class="feature-content">
-                  <span class="shortcut">!g search term</span> - Search Google
+                  <span class="shortcut">!g quantum computing</span> - Search Google
+                </div>
+              </li>
+              <li>
+                <div class="feature-icon">🤖</div>
+                <div class="feature-content">
+                  <span class="shortcut">!p how do black holes work</span> - Search Perplexity AI
+                </div>
+              </li>
+              <li>
+                <div class="feature-icon">💬</div>
+                <div class="feature-content">
+                  <span class="shortcut">!c javascript tips</span> - Search ChatGPT
                 </div>
               </li>
               <li>
                 <div class="feature-icon">📺</div>
                 <div class="feature-content">
-                  <span class="shortcut">!yt search term</span> - Search YouTube
+                  <span class="shortcut">!yt beginner coding tutorial</span> - Search YouTube
                 </div>
               </li>
               <li>
-                <div class="feature-icon">📚</div>
+                <div class="feature-icon">🖼️</div>
                 <div class="feature-content">
-                  <span class="shortcut">!w search term</span> - Search Wikipedia
+                  <span class="shortcut">!gi northern lights</span> - Search Google Images
+                </div>
+              </li>
+              <li>
+                <div class="feature-icon">💻</div>
+                <div class="feature-content">
+                  <span class="shortcut">!gh react hooks</span> - Search GitHub
+                </div>
+              </li>
+              <li>
+                <div class="feature-icon">📂</div>
+                <div class="feature-content">
+                  <span class="shortcut">!ghr cyberboyayush/quickbang</span> - Go directly to GitHub repository
                 </div>
               </li>
             </ul>
             
             <div class="note">
-              <p class="default-engine"><strong>Default Engine:</strong> Brave is set as the default search engine. If no bang is specified, your search will use Brave.</p>
-              <p class="customize-default">You can change your default search engine by running the following code in your browser console:</p>
+              <p><strong>Change Default Engine:</strong> Brave is the default search engine, but you can change it by running this in your browser console:</p>
               <div class="code-container">
-                <code>localStorage.setItem("default-bang", "your-preferred-bang")</code>
+                <code>localStorage.setItem("default-bang", "p")</code>
                 <button class="copy-code-button tooltip" data-tooltip="Copy to clipboard">
                   <img src="/clipboard.svg" alt="Copy" />
                 </button>
               </div>
-              <p class="examples">Examples: "g" for Google, "ddg" for DuckDuckGo, "yt" for YouTube</p>
+              <p class="examples">Examples: <code>g</code> (Google), <code>p</code> (Perplexity), <code>yt</code> (YouTube), <code>c</code> (ChatGPT)</p>
             </div>
             
             <p class="learn-more"><a href="https://duckduckgo.com/bang.html" target="_blank">Browse all available shortcuts →</a></p>
