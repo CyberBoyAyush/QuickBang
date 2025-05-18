@@ -94,7 +94,7 @@ Examples:
 
 ### Mobile Browsers
 
-#### Brave Mobile
+#### Brave Mobile (only one that supports)
 1. Tap the menu button ⋮ in the bottom right
 2. Select **Settings**
 3. Tap **Search engines**
@@ -105,27 +105,6 @@ Examples:
 8. Tap **Save**
 9. To set as default, tap QuickBang and select **Set as default**
 
-#### Chrome Mobile
-1. Tap the menu button ⋮ in the top right
-2. Select **Settings**
-3. Tap **Search engine**
-4. Tap **Manage search engines**
-5. Scroll down and tap **Add search engine**
-6. Enter "QuickBang" as the name
-7. Enter `https://quickbang.vercel.app/?q=%s` as the URL
-8. Tap **Save**
-9. To set as default, return to Search engine settings and select QuickBang
-
-#### Firefox Mobile
-1. Tap the menu button ⋮ in the bottom right
-2. Select **Settings**
-3. Tap **Search**
-4. Scroll down to **Add search engine**
-5. Tap **Other**
-6. Enter "QuickBang" as the name
-7. Enter `https://quickbang.vercel.app/?q=%s` as the URL
-8. Tap **Add**
-9. To set as default, go back to Search settings and select QuickBang
 
 ## Why It's Faster
 
@@ -147,3 +126,6 @@ pnpm run build
 ## Author
 
 [CyberBoyAyush](https://github.com/cyberboyayush)
+
+
+# Thanks to Duck Duck Go for their [bangs](https://duckduckgo.com/bang.html) and Theo for Unduck.
