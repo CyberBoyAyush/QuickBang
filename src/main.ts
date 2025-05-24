@@ -479,7 +479,6 @@ window.location.reload();
   });
 }
 
-const primarySearchEngine = localStorage.getItem("default-bang") ?? "brave";
 const userDefinedEngines = fetchUserSearchEngines();
 
 // Create a map for O(1) search engine lookup
