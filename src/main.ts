@@ -1,32 +1,42 @@
-import { bangs } from "./bang";
+import { bangs } from "../bang";
 import "./global.css";
 
-// Define type for bangs
-interface Bang {
-  t: string; // shortcut
-  d: string; // domain
-  u: string; // url with search placeholder
+// Define type for search engines
+interface SearchEngine {
+  shortcut: string; // trigger keyword
+  domain: string; // website domain
+  searchUrl: string; // url template for searches
 }
 
-// Custom bangs from localStorage
-const getCustomBangs = (): Bang[] => {
+// Retrieve user-defined search engines from browser storage
+const fetchUserSearchEngines = (): SearchEngine[] => {
   try {
-    const customBangsStr = localStorage.getItem("custom-bangs");
-    return customBangsStr ? JSON.parse(customBangsStr) : [];
-  } catch (e) {
-    console.error("Error parsing custom bangs:", e);
+    const savedEngines = localStorage.getItem("custom-bangs");
+    
+    // Check if we're coming from a custom bang update
+    const refreshCacheFlag = sessionStorage.getItem('refresh-bangs-cache');
+    if (refreshCacheFlag) {
+      // Clear the flag
+      sessionStorage.removeItem('refresh-bangs-cache');
+      // Set notification flag for next page load
+      sessionStorage.setItem('custom-bang-updated', 'true');
+    }
+    
+    return savedEngines ? JSON.parse(savedEngines) : [];
+  } catch (error) {
+    console.error("Failed to load user search engines:", error);
     return [];
   }
 };
 
-function noSearchDefaultPageRender() {
-  const app = document.querySelector<HTMLDivElement>("#app")!;
-  app.innerHTML = `
+function renderHomePage() {
+  const appContainer = document.querySelector<HTMLDivElement>("#app")!;
+  appContainer.innerHTML = `
     <div class="app-container">
       <div class="content-container">
         <div class="hero-section">
           <div class="logo-container">
-            <img src="/search.svg" alt="QuickBang logo" class="logo-icon" />
+            <img src="/favicon.svg" alt="QuickBang logo" class="logo-icon" />
             <h1>QuickBang</h1>
           </div>
           <p class="tagline">Lightning-fast search shortcuts with all DuckDuckGo bangs</p>
@@ -104,14 +114,20 @@ function noSearchDefaultPageRender() {
             </ul>
             
             <div class="note">
-              <p><strong>Change Default Engine:</strong> Brave is the default search engine, but you can change it by running this in your browser console:</p>
-              <div class="code-container">
-                <code>localStorage.setItem("default-bang", "p")</code>
-                <button class="copy-code-button tooltip" data-tooltip="Copy to clipboard">
-                  <img src="/clipboard.svg" alt="Copy" />
-                </button>
+              <p><strong>Change Default Engine:</strong> Select a new default search engine:</p>
+              <div class="default-engine-selector">
+                <select id="default-engine-select">
+                  <option value="brave" selected>Brave</option>
+                  <option value="g">Google</option>
+                  <option value="p">Perplexity</option>
+                  <option value="c">ChatGPT</option>
+                  <option value="yt">YouTube</option>
+                  <option value="gi">Google Images</option>
+                  <option value="gh">GitHub</option>
+                </select>
+                <button id="set-default-engine" class="set-default-button">Set Default</button>
               </div>
-              <p class="examples">Examples: <code>g</code> (Google), <code>p</code> (Perplexity), <code>yt</code> (YouTube), <code>c</code> (ChatGPT)</p>
+              <p class="examples">Current default: <code id="current-default-engine">brave</code></p>
             </div>
             
             <p class="learn-more"><a href="https://duckduckgo.com/bang.html" target="_blank">Browse all available shortcuts →</a></p>
@@ -134,6 +150,8 @@ customBangs.push({
   u: "https://example.com/search?q={{{s}}}"  // The search URL with {{{s}}} as the query placeholder
 });
 localStorage.setItem('custom-bangs', JSON.stringify(customBangs));
+// Force reload the search engine map to apply changes immediately
+window.location.reload();
               </code>
               <button class="copy-custom-bang-button tooltip" data-tooltip="Copy to clipboard">
                 <img src="/clipboard.svg" alt="Copy" />
@@ -152,6 +170,8 @@ customBangs.push({
   u: "https://dev.to/search?q={{{s}}}"
 });
 localStorage.setItem('custom-bangs', JSON.stringify(customBangs));
+// Force reload the search engine map to apply changes immediately
+window.location.reload();
                 </code>
                 <button class="copy-devto-example tooltip" data-tooltip="Copy to clipboard">
                   <img src="/clipboard.svg" alt="Copy" />
@@ -274,169 +294,327 @@ localStorage.setItem('custom-bangs', JSON.stringify(customBangs));
     </div>
   `;
 
-  // Copy button for URL functionality
-  const copyButton = app.querySelector<HTMLButtonElement>(".copy-button")!;
-  const copyIcon = copyButton.querySelector("img")!;
-  const urlInput = app.querySelector<HTMLInputElement>(".url-input")!;
-
-  copyButton.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(urlInput.value);
-      copyIcon.src = "/clipboard-check.svg";
-      copyButton.setAttribute('data-tooltip', 'Copied!');
-      copyButton.classList.add('copied');
-      
-      setTimeout(() => {
-        copyIcon.src = "/clipboard.svg";
-        copyButton.setAttribute('data-tooltip', 'Copy to clipboard');
-        copyButton.classList.remove('copied');
-      }, 2000);
-    } catch (error) {
-      console.error('Failed to copy text: ', error);
+  // Add notification functionality
+  const showNotification = (message: string, type = 'success') => {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+      <span class="notification-icon">✓</span>
+      <span>${message}</span>
+      <button class="close-notification">×</button>
+    `;
+    
+    // Add to DOM
+    appContainer.appendChild(notification);
+    
+    // Add close button functionality
+    const closeBtn = notification.querySelector('.close-notification');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        notification.classList.add('hiding');
+        setTimeout(() => notification.remove(), 300);
+      });
     }
-  });
-
-  // Add copy functionality for the localStorage code
-  const copyCodeButton = app.querySelector<HTMLButtonElement>(".copy-code-button")!;
-  const copyCodeIcon = copyCodeButton.querySelector("img")!;
-  const codeText = app.querySelector<HTMLElement>(".code-container code")!;
-
-  copyCodeButton.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(codeText.textContent || "");
-      copyCodeIcon.src = "/clipboard-check.svg";
-      copyCodeButton.setAttribute('data-tooltip', 'Copied!');
-      copyCodeButton.classList.add('copied');
-      
-      setTimeout(() => {
-        copyCodeIcon.src = "/clipboard.svg";
-        copyCodeButton.setAttribute('data-tooltip', 'Copy to clipboard');
-        copyCodeButton.classList.remove('copied');
-      }, 2000);
-    } catch (error) {
-      console.error('Failed to copy text: ', error);
-    }
-  });
-
-  // Add copy functionality for custom bang code examples
-  const copyButtons = [
-    app.querySelector<HTMLButtonElement>(".copy-custom-bang-button"),
-    app.querySelector<HTMLButtonElement>(".copy-devto-example")
-  ];
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+      notification.classList.add('hiding');
+      setTimeout(() => notification.remove(), 300);
+    }, 5000);
+  };
   
-  copyButtons.forEach(button => {
-    if (!button) return;
+  // Check for notifications
+  const checkNotifications = () => {
+    // Check if this page load is due to a custom bang update
+    const bangUpdated = sessionStorage.getItem('custom-bang-updated');
+    if (bangUpdated) {
+      // Clear the flag
+      sessionStorage.removeItem('custom-bang-updated');
+      showNotification('Custom bang was successfully added!');
+    }
     
-    const buttonIcon = button.querySelector("img")!;
-    const buttonCode = button.closest('.code-container')?.querySelector('code');
-    
-    button.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(buttonCode?.textContent?.trim() || "");
-        buttonIcon.src = "/clipboard-check.svg";
-        button.setAttribute('data-tooltip', 'Copied!');
-        button.classList.add('copied');
+    // Check if default engine was changed
+    const engineChanged = sessionStorage.getItem('default-engine-changed');
+    if (engineChanged) {
+      // Clear the flag
+      sessionStorage.removeItem('default-engine-changed');
+      const newEngine = localStorage.getItem('default-bang') || 'brave';
+      showNotification(`Default search engine changed to "${newEngine}"!`);
+    }
+  };
+  
+  // Call notification check when page loads
+  checkNotifications();
+
+  // Setup default engine selector
+  const defaultEngineSelect = appContainer.querySelector<HTMLSelectElement>('#default-engine-select');
+  const currentDefaultDisplay = appContainer.querySelector<HTMLElement>('#current-default-engine');
+  const setDefaultBtn = appContainer.querySelector<HTMLButtonElement>('#set-default-engine');
+  
+  // Set the current default in the dropdown
+  const currentDefault = localStorage.getItem('default-bang') || 'brave';
+  if (defaultEngineSelect && currentDefaultDisplay) {
+    defaultEngineSelect.value = currentDefault;
+    currentDefaultDisplay.textContent = currentDefault;
+  }
+  
+  // Handle setting default engine
+  if (setDefaultBtn) {
+    setDefaultBtn.addEventListener('click', () => {
+      if (defaultEngineSelect) {
+        const newDefault = defaultEngineSelect.value;
+        localStorage.setItem('default-bang', newDefault);
         
-        setTimeout(() => {
-          buttonIcon.src = "/clipboard.svg";
-          button.setAttribute('data-tooltip', 'Copy to clipboard');
-          button.classList.remove('copied');
-        }, 2000);
-      } catch (error) {
-        console.error('Failed to copy text: ', error);
+        // Update UI
+        if (currentDefaultDisplay) {
+          currentDefaultDisplay.textContent = newDefault;
+        }
+        
+        // Update engine immediately without reload
+        fallbackEngine = updateFallbackEngine();
+        
+        // Show confirmation
+        showNotification(`Default search engine changed to "${newDefault}"!`);
       }
     });
-  });
+  }
 
-  // Desktop/mobile tab switching
-  const deviceTabs = app.querySelectorAll<HTMLButtonElement>('.device-tab');
-  const deviceContents = app.querySelectorAll<HTMLDivElement>('.device-content');
+  // Helper function to handle copy button clicks
+  const setupCopyButton = (buttonSelector: string, textSelector: string, getTextFn?: () => string) => {
+    const copyBtn = appContainer.querySelector<HTMLButtonElement>(buttonSelector);
+    if (!copyBtn) return;
+    
+    const copyIcon = copyBtn.querySelector("img");
+    if (!copyIcon) return;
+    
+    copyBtn.addEventListener("click", async () => {
+      try {
+        let textToCopy = '';
+        if (getTextFn) {
+          textToCopy = getTextFn();
+        } else {
+          const element = typeof textSelector === 'string' ? 
+            appContainer.querySelector(textSelector) : textSelector;
+            
+          if (element instanceof HTMLInputElement) {
+            textToCopy = element.value;
+          } else if (element) {
+            textToCopy = element.textContent?.trim() || "";
+          }
+        }
+        
+        await navigator.clipboard.writeText(textToCopy);
+        copyIcon.src = "/clipboard-check.svg";
+        copyBtn.setAttribute('data-tooltip', 'Copied!');
+        copyBtn.classList.add('copied');
+        
+        setTimeout(() => {
+          copyIcon.src = "/clipboard.svg";
+          copyBtn.setAttribute('data-tooltip', 'Copy to clipboard');
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      } catch (err) {
+        console.error('Copy operation failed: ', err);
+      }
+    });
+  };
 
-  deviceTabs.forEach(button => {
-    button.addEventListener('click', () => {
-      // Remove active class from all buttons and contents
-      deviceTabs.forEach(btn => btn.classList.remove('active'));
-      deviceContents.forEach(content => content.classList.remove('active'));
-      
-      // Add active class to clicked button
-      button.classList.add('active');
-      
-      // Add active class to corresponding content
-      const device = button.getAttribute('data-device');
-      const content = app.querySelector(`#${device}-content`);
-      content?.classList.add('active');
+  // Setup all copy buttons
+  setupCopyButton(".copy-button", ".url-input");
+  setupCopyButton(".copy-code-button", ".code-container code");
+  
+  // Handle copying of example code blocks
+  const exampleCodeButtons = [
+    ".copy-custom-bang-button",
+    ".copy-devto-example"
+  ];
+  
+  exampleCodeButtons.forEach(selector => {
+    setupCopyButton(selector, '', () => {
+      const copyBtn = appContainer.querySelector(selector);
+      const codeBlock = copyBtn?.closest('.code-container')?.querySelector('code');
+      return codeBlock?.textContent?.trim() || "";
     });
   });
 
-  // Browser tab switching
-  const tabButtons = app.querySelectorAll<HTMLButtonElement>('.tab-button');
-  const tabContents = app.querySelectorAll<HTMLDivElement>('.tab-content');
+  // Platform selection tabs (desktop/mobile)
+  const platformSelectors = appContainer.querySelectorAll<HTMLButtonElement>('.device-tab');
+  const platformPanels = appContainer.querySelectorAll<HTMLDivElement>('.device-content');
 
-  tabButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      // Remove active class from all buttons and contents
-      tabButtons.forEach(btn => btn.classList.remove('active'));
-      tabContents.forEach(content => content.classList.remove('active'));
+  platformSelectors.forEach(selector => {
+    selector.addEventListener('click', () => {
+      // Clear all active states
+      platformSelectors.forEach(btn => btn.classList.remove('active'));
+      platformPanels.forEach(panel => panel.classList.remove('active'));
       
-      // Add active class to clicked button
-      button.classList.add('active');
+      // Activate selected platform
+      selector.classList.add('active');
       
-      // Add active class to corresponding content
-      const browser = button.getAttribute('data-browser');
-      const content = app.querySelector(`#${browser}-instructions`);
-      content?.classList.add('active');
+      // Show corresponding content panel
+      const platformType = selector.getAttribute('data-device');
+      const targetPanel = appContainer.querySelector(`#${platformType}-content`);
+      targetPanel?.classList.add('active');
+    });
+  });
+
+  // Browser instruction tabs
+  const browserSelectors = appContainer.querySelectorAll<HTMLButtonElement>('.tab-button');
+  const instructionPanels = appContainer.querySelectorAll<HTMLDivElement>('.tab-content');
+
+  browserSelectors.forEach(selector => {
+    selector.addEventListener('click', () => {
+      // Clear all active states
+      browserSelectors.forEach(btn => btn.classList.remove('active'));
+      instructionPanels.forEach(panel => panel.classList.remove('active'));
+      
+      // Activate selected browser
+      selector.classList.add('active');
+      
+      // Show corresponding instructions
+      const browserType = selector.getAttribute('data-browser');
+      const targetInstructions = appContainer.querySelector(`#${browserType}-instructions`);
+      targetInstructions?.classList.add('active');
     });
   });
 }
 
-const LS_DEFAULT_BANG = localStorage.getItem("default-bang") ?? "brave";
-const customBangs = getCustomBangs();
+const primarySearchEngine = localStorage.getItem("default-bang") ?? "brave";
+const userDefinedEngines = fetchUserSearchEngines();
 
-// Merge bangs - allow custom bangs to override existing ones
-const allBangs: Bang[] = [
-  ...customBangs,                                      // Custom bangs take precedence
-  ...bangs.filter(b => !customBangs.some(cb => cb.t === b.t))  // Add original bangs that don't have a custom override
-];
+// Create a map for O(1) search engine lookup
+const searchEngineMap = new Map<string, SearchEngine>();
 
-const defaultBang = allBangs.find((b) => b.t === LS_DEFAULT_BANG);
+// First add standard bangs
+bangs.forEach(engine => {
+  searchEngineMap.set(engine.t, { 
+    shortcut: engine.t, 
+    domain: engine.d, 
+    searchUrl: engine.u 
+  });
+});
 
-function getBangredirectUrl() {
-  const url = new URL(window.location.href);
-  const query = url.searchParams.get("q")?.trim() ?? "";
-  if (!query) {
-    noSearchDefaultPageRender();
+// Then override with user-defined engines (these take priority)
+userDefinedEngines.forEach(engine => {
+  searchEngineMap.set(engine.shortcut, engine);
+});
+
+// Create a function to update the fallback engine
+const updateFallbackEngine = () => {
+  const engineKey = localStorage.getItem("default-bang") ?? "brave";
+  return searchEngineMap.get(engineKey); 
+};
+
+// Initialize with current default
+let fallbackEngine = updateFallbackEngine();
+
+// Function to get search engine (with proper fallback handling)
+const getSearchEngine = (engineKey?: string) => {
+  if (!engineKey) return fallbackEngine;
+  return searchEngineMap.get(engineKey) || fallbackEngine;
+};
+
+// Add window event listener for storage changes
+window.addEventListener('storage', (event) => {
+  if (event.key === 'custom-bangs') {
+    // Set flag to refresh cache
+    sessionStorage.setItem('refresh-bangs-cache', 'true');
+    // Refresh the engine map
+    refreshEngineMap();
+  }
+  
+  // If default engine changed
+  if (event.key === 'default-bang') {
+    // Update fallback engine immediately
+    fallbackEngine = updateFallbackEngine();
+    // Set notification flag for next page load
+    sessionStorage.setItem('default-engine-changed', 'true');
+  }
+});
+
+// Add a function to refresh the engine map when custom bangs change
+const refreshEngineMap = () => {
+  // Clear existing map
+  searchEngineMap.clear();
+  
+  // Re-populate with standard bangs
+  bangs.forEach(engine => {
+    searchEngineMap.set(engine.t, { 
+      shortcut: engine.t, 
+      domain: engine.d, 
+      searchUrl: engine.u 
+    });
+  });
+  
+  // Override with user-defined engines
+  const userEngines = fetchUserSearchEngines();
+  userEngines.forEach(engine => {
+    searchEngineMap.set(engine.shortcut, engine);
+  });
+  
+  // Update fallback engine after refresh
+  fallbackEngine = updateFallbackEngine();
+};
+
+function constructRedirectUrl() {
+  const currentUrl = new URL(window.location.href);
+  const searchQuery = currentUrl.searchParams.get("q")?.trim() ?? "";
+  
+  if (!searchQuery) {
+    renderHomePage();
     return null;
   }
 
-  // Allow ! and : as bang shortcuts
-  const match = query.match(/([!:])(\S+)/i);
+  // Detect search engine triggers (! or :)
+  const triggerPattern = searchQuery.match(/([!:])(\S+)/i);
+  
+  // O(1) lookup with proper fallback
+  const engineKeyword = triggerPattern?.[2]?.toLowerCase();
+  const targetEngine = getSearchEngine(engineKeyword);
 
-  const bangCandidate = match?.[2]?.toLowerCase();
-  const selectedBang = allBangs.find((b) => b.t === bangCandidate) ?? defaultBang;
+  // Extract actual search terms by removing the trigger
+  const searchTerms = searchQuery.replace(/([!:])\S+\s*/i, "").trim();
 
-  // Remove the first bang from the query (either ! or :)
-  const cleanQuery = query.replace(/([!:])\S+\s*/i, "").trim();
+  // Navigate to domain if no search terms provided
+  if (searchTerms === "")
+    return targetEngine ? `https://${targetEngine.domain}` : null;
 
-  // If the query is just a bang, use the domain directly
-  if (cleanQuery === "")
-    return selectedBang ? `https://${selectedBang.d}` : null;
-
-  // Format of the url is:
-  // https://www.google.com/search?q={{{s}}}
-  const searchUrl = selectedBang?.u.replace(
+  // Build search URL with encoded query
+  const finalUrl = targetEngine?.searchUrl.replace(
     "{{{s}}}",
-    // Replace %2F with / to fix formats like "!ghr+cyberboyayush/quickbang"
-    encodeURIComponent(cleanQuery).replace(/%2F/g, "/")
+    // Preserve forward slashes for repository-style searches
+    encodeURIComponent(searchTerms).replace(/%2F/g, "/")
   );
-  if (!searchUrl) return null;
-
-  return searchUrl;
+  
+  return finalUrl || null;
 }
 
-function doRedirect() {
-  const searchUrl = getBangredirectUrl();
-  if (!searchUrl) return;
-  window.location.replace(searchUrl);
+function executeRedirection() {
+  const redirectUrl = constructRedirectUrl();
+  if (!redirectUrl) return;
+  window.location.replace(redirectUrl);
 }
 
-doRedirect();
+// Check if we need to apply settings changes immediately
+const applySettingsChanges = () => {
+  // Check URL for special params
+  const urlParams = new URLSearchParams(window.location.search);
+  
+  // Handle setting default engine via URL parameter
+  const setDefaultEngine = urlParams.get('set-default');
+  if (setDefaultEngine) {
+    localStorage.setItem('default-bang', setDefaultEngine);
+    sessionStorage.setItem('default-engine-changed', 'true');
+    // Remove the parameter and reload
+    urlParams.delete('set-default');
+    const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : '');
+    window.location.replace(newUrl);
+    return;
+  }
+  
+  // Normal execution
+  executeRedirection();
+};
+
+// Start the application
+applySettingsChanges();
