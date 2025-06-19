@@ -11,6 +11,15 @@ export const bangs = [
     u: "https://www.perplexity.ai/?q={{{s}}}",
   },
   {
+    c: "AVChat",
+    d: "www.avchat.ayush-sharma.in/",
+    r: 0,
+    s: "AVChat",
+    sc: "AVChat",
+    t: "av",
+    u: "https://avchat.ayush-sharma.in/chat?q={{{s}}}",
+  },
+  {
     c: "ChatGpt",
     d: "chat.openai.com/",
     r: 0,
@@ -8393,15 +8402,6 @@ export const bangs = [
     sc: "Comics",
     t: "avatarpress",
     u: "http://www.avatarpress.com/?s={{{s}}}",
-  },
-  {
-    c: "Entertainment",
-    d: "www.avclub.com",
-    r: 11,
-    s: "A.V. Club",
-    sc: "Movies",
-    t: "av",
-    u: "https://www.avclub.com/search?q={{{s}}}",
   },
   {
     c: "Online Services",
