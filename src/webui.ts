@@ -449,7 +449,7 @@ export function renderHomePage() {
             </ol>
 
             <div class="url-container">
-              <input type="text" class="url-input" value="https://quickbang.vercel.app/?q=%s" readonly />
+              <input type="text" class="url-input" value="https://quickbang.aysh.me/?q=%s" readonly />
               <button class="copy-button tooltip" data-tooltip="Copy to clipboard">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>

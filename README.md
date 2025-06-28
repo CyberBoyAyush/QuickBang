@@ -3,7 +3,7 @@
 QuickBang provides lightning-fast search shortcuts using DuckDuckGo's bang syntax. Add the following URL as a custom search engine to your browser for instant access to hundreds of search shortcuts.
 
 ```
-https://quickbang.vercel.app/?q=%s
+https://quickbang.aysh.me/?q=%s
 ```
 
 ## Features
@@ -52,7 +52,7 @@ Examples:
 5. Under "Site search", click **Add**
 6. Enter "QuickBang" as the name
 7. Enter a keyword like "qb" (optional)
-8. Enter `https://quickbang.vercel.app/?q=%s` as the URL
+8. Enter `https://quickbang.aysh.me/?q=%s` as the URL
 9. Click **Add**
 10. Find QuickBang in the list, click the three dots, and select **Make default**
 
@@ -64,7 +64,7 @@ Examples:
 5. Click **Add** button
 6. Enter "QuickBang" as the search engine
 7. Enter a keyword like "qb" (optional)
-8. Enter `https://quickbang.vercel.app/?q=%s` as the URL
+8. Enter `https://quickbang.aysh.me/?q=%s` as the URL
 9. Click **Add**
 10. To set as default, find QuickBang in the list and click **Make default**
 
@@ -74,7 +74,7 @@ Examples:
 3. Scroll down to **One-Click Search Engines**
 4. Click **Add**
 5. Enter "QuickBang" as the name
-6. Enter `https://quickbang.vercel.app/?q=%s` as the URL
+6. Enter `https://quickbang.aysh.me/?q=%s` as the URL
 7. Enter a keyword like "qb" (optional)
 8. Click **Add**
 9. To set as default, click **Search** at the top and select QuickBang
@@ -88,7 +88,7 @@ Examples:
 6. Click **Add**
 7. Enter "QuickBang" as the search engine
 8. Enter a nickname like "qb" (optional)
-9. Enter `https://quickbang.vercel.app/?q=%s` as the URL
+9. Enter `https://quickbang.aysh.me/?q=%s` as the URL
 10. Click **Add**
 11. Find QuickBang in the list, click the three dots, and select **Make default**
 
@@ -100,7 +100,7 @@ Examples:
 3. Tap **Search engines**
 4. Tap **Add search engine**
 5. Enter "QuickBang" as the name
-6. Enter `https://quickbang.vercel.app/?q=%s` as the URL
+6. Enter `https://quickbang.aysh.me/?q=%s` as the URL
 7. Enter a shortcut like "qb" (optional)
 8. Tap **Save**
 9. To set as default, tap QuickBang and select **Set as default**

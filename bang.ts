@@ -17,7 +17,7 @@ export const bangs = [
     s: "AVChat",
     sc: "AVChat",
     t: "av",
-    u: "https://avchat.ayush-sharma.in/chat?q={{{s}}}",
+    u: "https://www.avchat.xyz/chat?q={{{s}}}",
   },
   {
     c: "ChatGpt",
