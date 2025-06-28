@@ -12,7 +12,7 @@ export const bangs = [
   },
   {
     c: "AVChat",
-    d: "www.avchat.ayush-sharma.in/",
+    d: "www.avchat.xyz/",
     r: 0,
     s: "AVChat",
     sc: "AVChat",
