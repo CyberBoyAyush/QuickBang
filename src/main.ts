@@ -1,5 +1,6 @@
 import { bangs } from "../bang";
 import "./global.css";
+import { inject } from "@vercel/analytics";
 
 // Define type for search engines
 interface SearchEngine {
@@ -216,4 +217,5 @@ export const mainFunctions = {
 window.mainFunctions = mainFunctions;
 
 // Start the application
+inject(); // Initialize Vercel Analytics
 applySettingsChanges();
